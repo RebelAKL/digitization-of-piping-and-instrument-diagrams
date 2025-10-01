@@ -2,36 +2,47 @@ FROM python:3.9-slim-bullseye
 
 LABEL pipelineName="pnide-webapi"
 
+# Use root for installs
 USER root
 
-RUN apt-get clean && apt-get update && apt-get install -y ffmpeg libsm6 libxext6 curl gnupg
+# Install system packages required for OpenCV, PDF/image processing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg libsm6 libxext6 \
+    && rm -rf /var/lib/apt/lists/*
 
+# Add app user
 RUN adduser --disabled-password --gecos '' pythonwebapi
 
 WORKDIR /home/pythonwebapi
+
+# Copy requirements first (better Docker caching)
 COPY requirements.txt requirements.txt
 COPY logger_config.py logger_config.py
 
+# Upgrade pip tooling
 RUN pip install --upgrade pip setuptools wheel
-RUN pip install -r requirements.txt && pip install gunicorn && pip install flake8
 
-# ODBC 18 for SQL Server on Debian 11. If upgrading the O.S. or version, please consult the following link
-# https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
+# Install app dependencies
+# Note: requirements.txt should REMOVE pyodbc and ADD:
+#   cloud-sql-python-connector[pymysql]
+RUN pip install -r requirements.txt \
+    && pip install gunicorn flake8
 
-RUN apt-get update
-RUN ACCEPT_EULA=Y apt-get install -y msodbcsql18
-
-RUN apt-get remove -y ffmpeg curl gnupg
-
+# Copy source code
 COPY app app
 COPY init_app.py ./
 
+# Flask app variable for gunicorn/uvicorn
 ENV FLASK_APP init_app.py
 
+# Ensure correct ownership
 RUN chown -R pythonwebapi:pythonwebapi ./
 USER pythonwebapi
 
-EXPOSE 8000 7000
-ENTRYPOINT ["gunicorn","init_app:app","-k","uvicorn.workers.UvicornWorker","-b","0.0.0.0", "--timeout", "180"]
+# Cloud Run expects the app to listen on $PORT (defaults 8080)
+ENV PORT 8080
+
+EXPOSE 8080
+
+# Gunicorn + Uvicorn worker
+ENTRYPOINT ["gunicorn", "init_app:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8080", "--timeout", "180"]

@@ -12,9 +12,9 @@ from app.config import Config
 class TestConfig(unittest.TestCase):
     def test_happy_path(self):
         # arrange
-        blob_storage_account_url = 'blob_storage_account_url'
-        blob_storage_container_name = 'blob_storage_container_name'
-        form_recognizer_endpoint = 'form_recognizer_endpoint'
+        gcs_bucket_name = 'gcs_bucket_name'
+        gcs_bucket_name = 'gcs_bucket_name'
+        #form_recognizer_endpoint = 'form_recognizer_endpoint' we will change to doc ai later
         debug = True
         detect_dotted_lines = False
         inference_score_threshold = 1.5
@@ -29,9 +29,9 @@ class TestConfig(unittest.TestCase):
 
         # act
         config = Config(
-            blob_storage_account_url=blob_storage_account_url,
-            blob_storage_container_name=blob_storage_container_name,
-            form_recognizer_endpoint=form_recognizer_endpoint,
+            gcs_bucket_name=gcs_bucket_name,
+            gcs_bucket_name=gcs_bucket_name,
+            #form_recognizer_endpoint=form_recognizer_endpoint,
             debug=debug,
             detect_dotted_lines=detect_dotted_lines,
             inference_score_threshold=inference_score_threshold,
@@ -46,9 +46,9 @@ class TestConfig(unittest.TestCase):
         )
 
         # assert
-        assert config.blob_storage_account_url == blob_storage_account_url
-        assert config.blob_storage_container_name == blob_storage_container_name
-        assert config.form_recognizer_endpoint == form_recognizer_endpoint
+        assert config.gcs_bucket_name == gcs_bucket_name
+        assert config.gcs_bucket_name == gcs_bucket_name
+        #assert config.form_recognizer_endpoint == form_recognizer_endpoint
         assert config.debug == debug
         assert config.detect_dotted_lines == detect_dotted_lines
         assert config.line_detection_hough_min_line_length == 10
@@ -65,9 +65,9 @@ class TestConfig(unittest.TestCase):
 
     def test_happy_path_dotted_lines_true(self):
         # arrange
-        blob_storage_account_url = 'blob_storage_account_url'
-        blob_storage_container_name = 'blob_storage_container_name'
-        form_recognizer_endpoint = 'form_recognizer_endpoint'
+        gcs_bucket_name = 'gcs_bucket_name'
+        gcs_bucket_name = 'gcs_bucket_name'
+        #form_recognizer_endpoint = 'form_recognizer_endpoint'
         debug = True
         detect_dotted_lines = True
         inference_score_threshold = 1.5
@@ -82,9 +82,9 @@ class TestConfig(unittest.TestCase):
 
         # act
         config = Config(
-            blob_storage_account_url=blob_storage_account_url,
-            blob_storage_container_name=blob_storage_container_name,
-            form_recognizer_endpoint=form_recognizer_endpoint,
+            gcs_bucket_name=gcs_bucket_name,
+            gcs_bucket_name=gcs_bucket_name,
+            #form_recognizer_endpoint=form_recognizer_endpoint,
             debug=debug,
             detect_dotted_lines=detect_dotted_lines,
             inference_score_threshold=inference_score_threshold,
@@ -99,9 +99,9 @@ class TestConfig(unittest.TestCase):
         )
 
         # assert
-        assert config.blob_storage_account_url == blob_storage_account_url
-        assert config.blob_storage_container_name == blob_storage_container_name
-        assert config.form_recognizer_endpoint == form_recognizer_endpoint
+        assert config.gcs_bucket_name == gcs_bucket_name
+        assert config.gcs_bucket_name == gcs_bucket_name
+        #assert config.form_recognizer_endpoint == form_recognizer_endpoint
         assert config.debug == debug
         assert config.detect_dotted_lines == detect_dotted_lines
         assert config.line_detection_hough_min_line_length is None
@@ -122,7 +122,7 @@ class TestConfig(unittest.TestCase):
         # act
         with self.assertRaises(ValidationError) as exception:
             _ = Config(
-                blob_storage_account_url=str(),
+                gcs_bucket_name=str(),
                 blob_storage_container_name=str(),
                 form_recognizer_endpoint=str(),
                 symbol_detection_api=str(),
@@ -131,8 +131,8 @@ class TestConfig(unittest.TestCase):
 
         # assert
         exception_json = exception.exception.json()
-        self.assertIn("blob_storage_account_url", exception_json)
+        self.assertIn("gcs_bucket_name", exception_json)
         self.assertIn("blob_storage_container_name", exception_json)
-        self.assertIn("form_recognizer_endpoint", exception_json)
+        #self.assertIn("form_recognizer_endpoint", exception_json)
         self.assertIn("symbol_detection_api", exception_json)
         self.assertIn("symbol_detection_api_bearer_token", exception_json)
